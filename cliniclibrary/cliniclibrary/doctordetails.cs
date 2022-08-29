@@ -32,6 +32,13 @@ namespace cliniclibrary
             this.starttime = starttime;
             this.endtime = endtime;
         }
+        public Doctordetails(string fname, string specialization, string starttime, string endtime)
+        {
+            this.fname = fname;
+            this.specialization = specialization;
+            this.starttime = starttime;
+            this.endtime = endtime;
+        }
     }
 }
 

@@ -7,7 +7,7 @@ namespace clinicDB
     public class ClinicDatabase
     {
 
-        
+
         public static SqlConnection con;
         public static SqlCommand cmd;
         public SqlConnection getConnection()
@@ -34,7 +34,7 @@ namespace clinicDB
                     return fname + " " + lname;
                 }
                 else
-                    throw new LoginScreen.PasswordException("Incorrect password!");
+                    throw new Exception("Incorrect password!");
             }
             else
                 return null;
@@ -43,7 +43,7 @@ namespace clinicDB
         // ---------- retrive all the details of doctor ----------
         public List<Doctordetails> getDoctorDetails()
         {
-            List<Doctordetails> docdetails = new List<Doctordetails> ();
+            List<Doctordetails> docdetails = new List<Doctordetails>();
             con = getConnection();
             cmd = new SqlCommand("spdocdetails", con);
             cmd.CommandType = CommandType.StoredProcedure;
@@ -67,7 +67,7 @@ namespace clinicDB
 
         // ---------- Check if patient exists ----------
 
-        public bool checkPatientIdExists(long patientid)
+        public SqlDataReader checkPatientIdExists(long patientid)
         {
             con = getConnection();
             cmd = new SqlCommand("sqcheckpatient", con);
@@ -76,8 +76,8 @@ namespace clinicDB
             SqlDataReader reader = cmd.ExecuteReader();
 
             if (reader.Read())
-                return true;
-            return false;
+                return reader;
+            return null;
 
         }
 
@@ -118,37 +118,11 @@ namespace clinicDB
             return false;
         }
 
-        // ---------- Scheduling new appointment ----------
-
-        public Appointments scheduleNewAppointment(long patientid, int specid, DateTime date)
+        // ---------- Get patient name ----------
+        public string getPatientName(long patientid)
         {
-            string specname="";
-            string docname="";
-            string patientName ="";
-            string appointStartTime="";
-            string appointEndTime = "";
-
-            string patientname;
-            //getting doc name and appointment timing
+            string patientName = "";
             con = getConnection();
-            cmd = new SqlCommand("spGetDocdetails", con);
-            cmd.CommandType = CommandType.StoredProcedure;
-            cmd.Parameters.AddWithValue("@specializationId", specid);
-            SqlDataReader readDocDetails = cmd.ExecuteReader();
-
-            try
-            {
-                readDocDetails.Read();
-                specname = readDocDetails["specialization"].ToString();
-                docname = readDocDetails["firstname"].ToString();
-                appointStartTime = readDocDetails["startTime"].ToString();
-                appointEndTime = readDocDetails["endTime"].ToString();
-                readDocDetails.Close();
-            }catch(Exception e)
-            {
-                Console.WriteLine(e.Message);                
-            }
-            // get patient name
             cmd = new SqlCommand("spPatientname", con);
             cmd.CommandType = CommandType.StoredProcedure;
             cmd.Parameters.AddWithValue("@patientId", patientid);
@@ -163,24 +137,69 @@ namespace clinicDB
             {
                 Console.WriteLine(e.Message);
             }
+            return patientName;
+        }
+
+
+        // ---------- getting neccessarry doc details ----------
+
+        public Doctordetails getDocdetailsforAppointment(int specid)
+        {
+            string specname = "";
+            string docname = "";
+            string patientName = "";
+            string appointStartTime = "";
+            string appointEndTime = "";
+            Doctordetails docdetail = null;
+            con = getConnection();
+            cmd = new SqlCommand("spGetDocdetails", con);
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@specializationId", specid);
+            SqlDataReader readDocDetails = cmd.ExecuteReader();
+
+            try
+            {
+                readDocDetails.Read();
+                specname = readDocDetails["specialization"].ToString();
+                docname = readDocDetails["firstname"].ToString();
+                appointStartTime = readDocDetails["startTime"].ToString();
+                appointEndTime = readDocDetails["endTime"].ToString();
+                docdetail=new Doctordetails(docname, specname, appointStartTime, appointEndTime);
+                readDocDetails.Close();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+            return docdetail;
+        }
+
+
+        // ---------- scheduling new appointment ----------
+
+        public Appointments scheduleNewAppointment(Appointments app)
+        {
+
             // insert data to apointments table 
             long appointid = getId();
 
-            bool success =false;
+            bool success = false;
             try
             {
                 cmd = new SqlCommand("spScheduleAppointment", con);
                 cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.AddWithValue("@appointmentid", appointid);
-                cmd.Parameters.AddWithValue("@patientId", patientid);
-                cmd.Parameters.AddWithValue("@specializationId", specid);
-                cmd.Parameters.AddWithValue("@doctor", docname);
-                cmd.Parameters.AddWithValue("@visitDate", date);
-                cmd.Parameters.AddWithValue("@appointmentStartTime", appointStartTime);
-                cmd.Parameters.AddWithValue("@appointmentEndTime", appointEndTime);
+                cmd.Parameters.AddWithValue("@appointmentid", app.appointmentId);
+                cmd.Parameters.AddWithValue("@patientId", app.patientId);
+                cmd.Parameters.AddWithValue("@specializationId", app.specializationID);
+                cmd.Parameters.AddWithValue("@specializationName", app.specialization);
+                cmd.Parameters.AddWithValue("@doctor", app.doctorname);
+                cmd.Parameters.AddWithValue("@visitDate", app.visitdate);
+                cmd.Parameters.AddWithValue("@appointmentStartTime", app.appointmentStartTime);
+                cmd.Parameters.AddWithValue("@appointmentEndTime", app.appointmentEndTime);
                 cmd.ExecuteNonQuery();
                 success = true;
-            }catch(Exception e)
+            }
+            catch (Exception e)
             {
                 Console.WriteLine(e.Message);
             }
@@ -189,9 +208,9 @@ namespace clinicDB
                 if (success)
                     Console.WriteLine("***** Appointment fixed successfully *****");
             }
-            return new Appointments(appointid, patientName, specname, docname, date, appointStartTime, appointEndTime);
-
+            return app;
         }
+
 
         // ---------- cancel appointment ----------
 
@@ -202,10 +221,10 @@ namespace clinicDB
             cmd.CommandType = CommandType.StoredProcedure;
             cmd.Parameters.AddWithValue("@id", appointId);
             SqlDataReader readAppointment = cmd.ExecuteReader();
-            if(readAppointment.Read())
+            if (readAppointment.Read())
             {
                 readAppointment.Close();
-                bool success=false;
+                bool success = false;
                 try
                 {
                     cmd = new SqlCommand("spDeleteAppointment", con);
@@ -213,13 +232,13 @@ namespace clinicDB
                     cmd.Parameters.AddWithValue("@id", appointId);
                     cmd.ExecuteNonQuery();
                     success = true;
-                }catch(Exception e)
+                }
+                catch (Exception e)
                 {
                     Console.WriteLine(e.Message);
                 }
-                
-                return true;
 
+                return true;
             }
             else
             {
@@ -230,30 +249,23 @@ namespace clinicDB
 
         // ---------- Adding new patient ----------
 
-        public Patients addNewPatient(string fname, string lname, DateTime dob, int age, string gender)
+        public Patients addNewPatient(Patients newpatient)
         {
             con = getConnection();
-            try
-            {
-                cmd = new SqlCommand("spAddPatient", con);
-                cmd.CommandType = CommandType.StoredProcedure;
-                long patientid = getId();
-                cmd.Parameters.AddWithValue("@patientId", patientid);
-                cmd.Parameters.AddWithValue("@firstname", fname);
-                cmd.Parameters.AddWithValue("@lastname", lname);
-                cmd.Parameters.AddWithValue("@sex", gender);
-                cmd.Parameters.AddWithValue("@age", age);
-                cmd.Parameters.AddWithValue("@dateofbirth", dob);
-                cmd.ExecuteNonQuery();
-                return new Patients(patientid, fname, lname, gender, age,dob);
-            }catch(Exception e)
-            {
-                Console.WriteLine(e.Message);
-                return null;
-            }
-        }
+            cmd = new SqlCommand("spAddPatient", con);
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@patientId", newpatient.id);
+            cmd.Parameters.AddWithValue("@firstname", newpatient.fname);
+            cmd.Parameters.AddWithValue("@lastname", newpatient.lname);
+            cmd.Parameters.AddWithValue("@sex", newpatient.sex);
+            cmd.Parameters.AddWithValue("@age", newpatient.age);
+            cmd.Parameters.AddWithValue("@dateofbirth", newpatient.dob);
+            cmd.ExecuteNonQuery();
+            if(checkPatientIdExists(newpatient.id) != null)
+                return newpatient;
+            return null;
 
-        // Getting random id of 10 digit
+        }
         long getId()
         {
             Random rand = new Random();

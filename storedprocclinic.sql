@@ -42,13 +42,14 @@ create proc spScheduleAppointment
 @appointmentid bigint,
 @patientId bigint,
 @specializationId int,
+@specializationName varchar(30),
 @doctor varchar(20),
 @visitDate datetime,
 @appointmentStartTime varchar(10),
 @appointmentEndTime varchar(10))
 
 as
-insert into appointments values(@appointmentid, @patientId, @specializationId, @doctor, @visitDate, @appointmentStartTime, @appointmentEndTime);
+insert into appointments values(@appointmentid, @patientId, @specializationId,@specializationName, @doctor, @visitDate, @appointmentStartTime, @appointmentEndTime);
 
 exec spScheduleAppointment 2345676787, 3749024169, 24, 'daniel', '12/10/22', '12:00', '1:00';
 

@@ -22,309 +22,246 @@ namespace mainprogram
             Console.WriteLine("*****************************************************************************");
 
             // loginScreen screen
-            bool getLoginandValidate()
+            isLoggedin = clinic.getLoginandValidate();
+            bool toContinue = true;
+            while (isLoggedin)
             {
-                bool flag = true;
-                do
+                // Displaying all the options 
+                int choice = clinic.homeScreen();
+                switch (choice)
                 {
-                    try
-                    {
-                        Console.WriteLine("\n Enter username and password to login");
-                        string username = Console.ReadLine();
-                        string password = Console.ReadLine();
-                        if (username.Count() > 0 && password.Count() > 0)
+                    case 1:
                         {
-
-                            if (username.Count() > 10)
-                                throw new LoginScreen.UsernameException("Username should not be greater than 10");
-                            else
-                                flag = clinic.loginScreen(username, password);
+                            // To view all doctors list
+                            Console.WriteLine("*****************************************************************************");
+                            List<Doctordetails> doctordetilas = clinic.displayDoctorDetails();
+                            foreach (var item in doctordetilas)
+                            {
+                                Console.WriteLine(
+                                    "Id: " + item.id +
+                                    "\tName: " + item.fname + " " + item.lname +
+                                    "\tSex: " + item.sex +
+                                    "\tSpecialization: " + item.specialization +
+                                    "\tSpecializationid: " + item.specializationid +
+                                    "\tStarttime: " + item.starttime +
+                                    "\tEndtime: " + item.endtime + "\n\n");
+                                Console.WriteLine("**********");
+                            }
                         }
-                        else
+                        break;
+                    case 2:
                         {
-                            Console.WriteLine("Username or password cannot be null");
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e.Message);
-                    }
-
-                } while (flag);
-                return flag;
-            }
-            if (getLoginandValidate()) {
-                Console.WriteLine("Login failed");
-            } else
-            {
-               isLoggedin = true;
-            }
-
-            if (isLoggedin)
-            {
-                bool toContinue = true;
-                while (toContinue)
-                {
-                    // Displaying all the options 
-                    int choice = clinic.homeScreen();
-
-                    switch (choice)
-                    {
-                        case 1:
+                            // To add new patient
+                            Console.WriteLine("Enter Firstname and lastname");
+                            bool flag = true;
+                            do
                             {
-                                // To view all doctors list
-                                Console.WriteLine("*****************************************************************************");
-                                List<Doctordetails> doctordetilas = clinic.displayDoctorDetails();
-                                foreach (var item in doctordetilas)
-                                {
-                                    Console.WriteLine(
-                                        "Id: " + item.id +
-                                        "\nName: " + item.fname + " " + item.lname +
-                                        "\nSex: " + item.sex +
-                                        "\nSpecialization: " + item.specialization +
-                                        "\nSpecializationid: " + item.specializationid +
-                                        "\nStarttime: " + item.starttime +
-                                        "\nEndtime: " + item.endtime + "\n\n");
-                                    Console.WriteLine("**********");
-                                }
-                            }
-                            break;
-                        case 2:
-                            {
-                                // To add new patient
-                                Console.WriteLine("Enter Firstname and lastname");
-                                bool flag = true;
-                                do
-                                {
-                                    string firstName = Console.ReadLine();
-                                    string lastName = Console.ReadLine();
+                                string firstName = Console.ReadLine();
+                                string lastName = Console.ReadLine();
 
-                                    if (clinic.checkString(firstName) && clinic.checkString(lastName))
+                                if (clinic.checkString(firstName) && clinic.checkString(lastName))
+                                {
+                                    do
                                     {
-                                        do
+                                        try
                                         {
-                                            try
+                                            Console.WriteLine("Enter date of Birth in given format(10/05/2001)");
+                                            DateTime dob = DateTime.Parse(Console.ReadLine());
+                                            if (dob <= DateTime.Today)
                                             {
-                                                Console.WriteLine("Enter date of Birth in given format(10/05/2001)");
-                                                DateTime dob = DateTime.Parse(Console.ReadLine());
-                                                if (dob <= DateTime.Today)
-                                                {
-                                                    int age = DateTime.Today.Year - dob.Year;
-                                                    do
-                                                    {
-                                                        try
-                                                        {
-                                                            Console.WriteLine("Gender: press '1' for male '2' for Female and '0' for others");
-                                                            int genderid = int.Parse(Console.ReadLine());
-                                                            string gender = "";
-                                                            if (genderid == 0 || genderid == 1 || genderid == 2)
-                                                            {
-                                                                if (genderid == 0)
-                                                                    gender = "Others";
-                                                                else if (genderid == 1)
-                                                                    gender = "Male";
-                                                                else if (genderid == 2)
-                                                                    gender = "Female";
-                                                                flag = false;
-                                                                Patients newpatient = clinic.addPatient(firstName, lastName, dob, age, gender);
-                                                                if (newpatient != null)
-                                                                {
-                                                                    Console.WriteLine("***** New patient added *****");
-                                                                    Console.WriteLine("Patient ID: " + newpatient.id +
-                                                                        "\nPatient Name: " + newpatient.fname + " " + newpatient.lname +
-                                                                        "\nSex: " + newpatient.sex +
-                                                                        "\nAge: " + newpatient.age +
-                                                                        "\nDate of Birth: " + newpatient.dob);
-                                                                }
-
-                                                            }
-                                                            else
-                                                                Console.WriteLine("Enter valid gender choice");
-                                                        }
-                                                        catch (Exception e)
-                                                        {
-                                                            Console.WriteLine(e.Message);
-                                                        }
-
-
-                                                    } while (flag);
-
-                                                }
-                                                else
-                                                {
-                                                    Console.WriteLine("Enter a valid date");
-                                                }
-                                            }
-                                            catch (FormatException e)
-                                            {
-                                                Console.WriteLine("Only date input is accepted");
-                                            }
-
-                                        } while (flag);
-                                    }
-                                    else
-                                    {
-                                        Console.WriteLine("Enter valid name");
-                                    }
-                                } while (flag);
-
-
-                            }
-                            break;
-                        case 3:
-                            {
-                                // Fix new appointment 
-                                Console.WriteLine("*********************************** New Appointment ***********************************");
-                                bool flag = true;
-                                do
-                                {
-                                    try
-                                    {
-                                        Console.WriteLine("Enter patient id: ");
-                                        long id = long.Parse(Console.ReadLine());
-                                        if (clinic.checkIdDigits(id))
-                                            Console.WriteLine("Id must contain 10 digits");
-                                        else
-                                        {
-                                            if (clidb.checkPatientIdExists(id))
-                                            {
-                                                Console.WriteLine("Patient Found!");
-                                                List<int> allspecs = new List<int>();
-                                                Dictionary<int, string> allcollection = clidb.getSpecialization();
-                                                foreach (KeyValuePair<int, string> spec in allcollection)
-                                                {
-
-                                                    allspecs.Add(spec.Key);
-                                                }
+                                                int age = clinic.getage(dob);
                                                 do
                                                 {
-                                                    Console.WriteLine("\nChoose Your consultant by using appropriate spetialization id");
-                                                    foreach (KeyValuePair<int, string> spec in allcollection)
-                                                    {
-                                                        Console.WriteLine("{0}: {1}",
-                                                                  spec.Key, spec.Value);
-
-                                                    }
-                                                    try
-                                                    {
-                                                        int userSpec = int.Parse(Console.ReadLine());
-                                                        if (allspecs.Contains(userSpec))
+                                                   
+                                                        Console.WriteLine("Gender: press '1' for male '2' for Female and '0' for others");
+                                                        int genderid = int.Parse(Console.ReadLine());
+                                                        
+                                                        string gender = clinic.getGender(genderid);
+                                                        if(gender!=null)
                                                         {
-                                                            do
+                                                            flag = false;
+                                                            Patients newpatient = clinic.addPatient(new Patients(clinic.getId(), firstName, lastName, gender, age, dob));
+
+                                                            if (newpatient != null)
                                                             {
-                                                                try
-                                                                {
-                                                                    Console.WriteLine("Enter the date the appointment has to be fixed (ex: 10/05/22): ");
-                                                                    DateTime appointDate = DateTime.Parse(Console.ReadLine());
-                                                                    DateTime now = DateTime.Today;
-                                                                    if (appointDate > now)
-                                                                        // check if there already an appoitnment fixed in that date 
-                                                                        if (clidb.checkAppointmentdates(appointDate, userSpec))
-                                                                            Console.WriteLine("***** There is already an appointment fixed in that date.. choose some other dates *****");
-                                                                        else
-                                                                        {
-                                                                            Console.WriteLine("\n***** Appointment on that date can be fixed *****\n");
-                                                                            Appointments app = clinic.scheduleAppoinment(id, userSpec, appointDate);
-                                                                            Console.WriteLine("\n Appointment Id: "+app.appointmentid+ 
-                                                                                "\nPatient Name: " + app.patientname+
-                                                                                "\nSpecialization: " + app.specialization +
-                                                                                "\nDoctor Name: " + app.doctorname +
-                                                                                "\nVisit Date: " + app.visitdate +
-                                                                                "\nAppointment Start time: " + app.appointmentStartTime +
-                                                                            "\nAppointment End Time: " + app.appointmentEndTime);
-                                                                            flag = false;
-                                                                        }
-
-                                                                    else
-                                                                        Console.WriteLine("Enter date greater than today ");
-
-                                                                }
-                                                                catch (FormatException e)
-                                                                {
-                                                                    Console.WriteLine("Enter valid date");
-                                                                }
-                                                            } while (flag);
+                                                                Console.WriteLine("***** New patient added *****");
+                                                                Console.WriteLine("Patient ID: " + newpatient.id +
+                                                                    "\nPatient Name: " + newpatient.fname + " " + newpatient.lname +
+                                                                    "\nSex: " + newpatient.sex +
+                                                                    "\nAge: " + newpatient.age +
+                                                                    "\nDate of Birth: " + newpatient.dob);
+                                                            }
                                                         }
-                                                        else
-                                                        {
-                                                            Console.WriteLine("***** Enter Valid choice!!!! *****");
-                                                        }
-                                                    }
-                                                    catch (FormatException f)
-                                                    {
-                                                        Console.WriteLine("***** Enter choice in number!!!! *****");
-                                                    }
-
                                                 } while (flag);
                                             }
                                             else
-                                                Console.WriteLine("Patient Id doesnot exists!");
+                                            {
+                                                Console.WriteLine("Enter a valid date which is less than today");
+                                            }
                                         }
-                                    }
-                                    catch (FormatException f)
-                                    {
-                                        Console.WriteLine("Enter the id in digits");
-                                    }
-                                } while (flag);
+                                        catch (FormatException e)
+                                        {
+                                            Console.WriteLine("Only date input is accepted");
+                                        }
 
-
-                            }
-                            break;
-                        case 4:
-                            {
-                                // Cancel Appointment
-                                Console.WriteLine("*****************************************************************************");
-                                bool flag = true;
-                                do
+                                    } while (flag);
+                                }
+                                else
                                 {
-                                    try
+                                    Console.WriteLine("Enter valid name");
+                                }
+                            } while (flag);
+
+
+                        }
+                        break;
+                    case 3:
+                        {
+                            // Fix new appointment 
+                            Console.WriteLine("*********************************** New Appointment ***********************************");
+                            bool flag = true;
+                            do
+                            {
+                                try
+                                {
+                                    Console.WriteLine("Enter patient id: ");
+                                    long id = long.Parse(Console.ReadLine());
+                                    if (clinic.checkIdDigits(id))
+                                        Console.WriteLine("Id must contain 10 digits");
+                                    else
                                     {
-                                        Console.WriteLine("Enter appointment Id: ");
-                                        long appid = long.Parse(Console.ReadLine());
-                                        if (clinic.checkIdDigits(appid))
-                                            Console.WriteLine("Id must contain 10 digits");
+                                        if (clidb.checkPatientIdExists(id)!=null)
+                                        {
+                                            Console.WriteLine("*** Patient Found! ***");
+                                            clinic.displaySpec();
+                                            List<int> allspecs = clinic.allSpecsid();
+                                            do
+                                            {
+                                                Console.WriteLine("\nChoose Your consultant by using appropriate spetialization id");
+                                                    int userSpec = int.Parse(Console.ReadLine());
+                                                    if (allspecs.Contains(userSpec))
+                                                    {
+                                                        do
+                                                        {
+                                                                Console.WriteLine("Enter the date the appointment has to be fixed (ex: 10/05/22): ");
+                                                                DateTime appointDate = DateTime.Parse(Console.ReadLine());
+                                                                
+                                                                if (clinic.checkdateFormatforAppoint(appointDate))
+                                                                {
+                                                                    // check if there already an appoitnment fixed in that date 
+                                                                    if (clidb.checkAppointmentdates(appointDate, userSpec))
+                                                                        Console.WriteLine("***** There is already an appointment fixed in that date.. choose some other dates *****");
+                                                                    else
+                                                                    {
+
+                                                                        // get patient name with id, get doc details
+                                                                        string patientname = clidb.getPatientName(id);
+                                                                        Doctordetails docneccessarydetail = clidb.getDocdetailsforAppointment(userSpec);
+                                                                        if (patientname != null && docneccessarydetail != null)
+                                                                        {
+
+                                                                            Console.WriteLine("\n***** Appointment on that date can be fixed *****\n");
+                                                                            Appointments app = clinic.scheduleAppoinment(new Appointments(clinic.getId(), id, patientname, userSpec, docneccessarydetail.specialization, docneccessarydetail.fname, appointDate, docneccessarydetail.starttime, docneccessarydetail.endtime)); 
+                                                                            Console.WriteLine("\n Appointment Id: " + app.appointmentId +
+                                                                                    "\nPatient Name: " + app.patientname +
+                                                                                    "\nSpecialization: " + app.specialization +
+                                                                                    "\nDoctor Name: " + app.doctorname +
+                                                                                    "\nVisit Date: " + app.visitdate +
+                                                                                    "\nAppointment Start time: " + app.appointmentStartTime +
+                                                                                "\nAppointment End Time: " + app.appointmentEndTime);
+                                                                                flag = false;
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            Console.WriteLine("Couldn't get patient doctor details");
+                                                                        }
+                                                                      
+                                                                    }
+                                                                }
+                                                                   
+                                                                else
+                                                                    Console.WriteLine("Enter a valid date within a year and not less than today ");
+                                                        } while (flag);
+                                                    }
+                                                    else
+                                                    {
+                                                        Console.WriteLine("***** Enter Valid choice!!!! *****");
+                                                    }
+                                                
+
+                                            } while (flag);
+                                        }
+                                        else
+                                            Console.WriteLine("Patient Id doesnot exists!");
+                                    }
+                                }
+                                catch (FormatException f)
+                                {
+                                    Console.WriteLine("Enter Input in correct format");
+                                }
+                            } while (flag);
+                        }
+                        break;
+                    case 4:
+                        {
+                            // Cancel Appointment
+                            Console.WriteLine("*****************************************************************************");
+                            bool flag = true;
+                            do
+                            {
+                                try
+                                {
+                                    Console.WriteLine("Enter appointment Id: ");
+                                    long appid = long.Parse(Console.ReadLine());
+                                    if (clinic.checkIdDigits(appid))
+                                        Console.WriteLine("Id must contain 10 digits");
+                                    else
+                                    {
+                                        if (clinic.cancelAppoinment(appid))
+                                        {
+                                            Console.WriteLine("***** Appointment Successfully Cancelled!! *****");
+                                            flag = false;
+                                        }
                                         else
                                         {
-                                            if (clinic.cancelAppoinment(appid))
-                                            {
-                                                Console.WriteLine("***** Appointment Successfully Cancelled!! *****");
-                                                flag = false;
-                                            }
-                                            else
-                                            {
-                                                Console.WriteLine("Appointment Id not found");
-                                            }
+                                            Console.WriteLine("Appointment Id not found");
                                         }
                                     }
-                                    catch (FormatException f)
-                                    {
-                                        Console.WriteLine(f.Message);
-                                    }
-                                } while (flag);
-                            }
-                            break;
-                        case 5:
-                            {
-                                isLoggedin = false;
-                            }
-                            break;
-                        default:
-                            Console.WriteLine("invalid choice");
-                            break;
-                    }
-                    try
-                    {
-                        Console.WriteLine("\nPress any number from '1-9' to continue with banking, press '0' to quit");
-                        int cont = int.Parse(Console.ReadLine());
-                        if (cont == 0)
-                            toContinue = false;
-                    }
-                    catch (Exception e)
-                    {
-                        continue;
-                    }
+                                }
+                                catch (FormatException f)
+                                {
+                                    Console.WriteLine(f.Message);
+                                }
+                            } while (flag);
+                        }
+                        break;
+                    case 5:
+                        {
+                            Console.WriteLine("******* Logged out from account *******");
+                            isLoggedin = clinic.getLoginandValidate();
+                            continue;
+                        }
+                        break;
+                    default:
+                        Console.WriteLine("invalid choice");
+                        break;
                 }
-            } 
+                try
+                {
+                    Console.WriteLine("\nPress any key from '1-9' to continue with banking, press '0' to quit");
+                    int cont = int.Parse(Console.ReadLine());
+                    if (cont == 0)
+                        break;
+                    else
+                        continue;
+
+                }
+                catch (Exception e)
+                {
+                    continue;
+                }
+                
+        } 
         }
     }
 }

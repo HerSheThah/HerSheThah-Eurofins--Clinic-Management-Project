@@ -67,11 +67,13 @@ create table appointments(
 appointmentid bigint not null primary key,
 patientId bigint foreign key references patientDetails(patientId),
 specializationId int foreign key references doctordetails(specializationID),
+specializationName varchar(30),
 doctor varchar(20),
 visitDate datetime check(visitDate>getdate()) ,
 appointmentTimeFrom varchar(10),
 appointmentTimeTo varchar(10))
 
+drop table appointments
 insert into appointments values(9906352627, 4587203929,
 24,
 'Daniel',

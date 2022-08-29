@@ -11,8 +11,8 @@ namespace cliniclibrary
 
         public bool loginScreen(string username, string password);
         public List<Doctordetails> displayDoctorDetails();
-        public Patients addPatient(string fname, string lname, DateTime dob, int age, string gender);
-        public Appointments scheduleAppoinment(long id, int spec, DateTime appointDate);
+        public Patients addPatient(Patients newpatient);
+        public Appointments scheduleAppoinment(Appointments app);
         public bool cancelAppoinment(long id);
     }
 }

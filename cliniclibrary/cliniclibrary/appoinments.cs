@@ -8,9 +8,13 @@ namespace cliniclibrary
 {
     public class Appointments
     {
-        public long appointmentid {get;set;}
+        public long appointmentId { get;set;}
+        public long patientId { get; set; }
+
         public string patientname { get; set; }
         public string specialization { get; set; }
+        public int specializationID { get; set; }
+
         public string doctorname { get; set; }
         public DateTime visitdate { get; set; }
 
@@ -19,11 +23,14 @@ namespace cliniclibrary
 
 
         public Appointments() { }
-        public Appointments(long appointmentId, string patientname, string specialization, string doctorname, DateTime visitdate, string appointmentStartTime, string appointmentEndTime)
+        public Appointments(long appointmentId,long patientId, string patientname, int specializationID, string specialization, string doctorname, DateTime visitdate, string appointmentStartTime, string appointmentEndTime)
         {
-            this.appointmentid = appointmentid;
+            this.appointmentId = appointmentId;
+            this.patientId = patientId;
             this.patientname = patientname;
             this.specialization = specialization;
+            this.specializationID = specializationID;
+
             this.doctorname = doctorname;
             this.visitdate = visitdate;
             this.appointmentStartTime = appointmentStartTime;
